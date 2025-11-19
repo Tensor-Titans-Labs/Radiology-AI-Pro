@@ -5,4 +5,5 @@ import os
 
 # Get the API key from environment variable or use the default one
 
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyDbxotPjzlOxLjT6xb5hy13EhFJQr-E3lA')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyAtkzA5GDAEHcLPQJNvYCac1nlxjLy0uVc')
+
