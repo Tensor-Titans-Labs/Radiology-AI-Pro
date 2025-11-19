@@ -9,7 +9,7 @@ from utils import generate_text_report_with_retry
 
 # Configure Gemini API
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-2.0-flash-exp')
+model = genai.GenerativeModel('gemini-2.0-flash-lite')
 
 # Comprehensive Hospital Database for Gulbarga
 HOSPITALS_DATA = {

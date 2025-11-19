@@ -2,5 +2,4 @@ streamlit
 google-generativeai
 Pillow
 reportlab
-
 PyPDF2

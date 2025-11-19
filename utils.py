@@ -30,7 +30,7 @@ def generate_report_with_retry(image, prompt, max_retries=3, base_delay=1):
     img_byte_arr = img_byte_arr.getvalue()
     
     # Create the model
-    model = genai.GenerativeModel('gemini-2.0-flash-exp')
+    model = genai.GenerativeModel('gemini-2.0-flash-lite')
     
     for attempt in range(max_retries + 1):
         try:
@@ -66,7 +66,7 @@ def generate_report_with_retry(image, prompt, max_retries=3, base_delay=1):
 def generate_text_report_with_retry(prompt, max_retries=3, base_delay=1):
     """Generate text-based report with retry mechanism for rate limiting"""
     # Create the model
-    model = genai.GenerativeModel('gemini-2.0-flash-exp')
+    model = genai.GenerativeModel('gemini-2.0-flash-lite')
     
     for attempt in range(max_retries + 1):
         try:
