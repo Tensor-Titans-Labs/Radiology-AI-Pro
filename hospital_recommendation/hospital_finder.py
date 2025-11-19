@@ -14,6 +14,7 @@ from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.colors import HexColor
 import random
 from gemini_api import GEMINI_API_KEY
+from utils import generate_text_report_with_retry
 
 # Configure Gemini API
 genai.configure(api_key=GEMINI_API_KEY)
@@ -365,8 +366,8 @@ Be specific and medical in your analysis."""
     
     try:
         with st.spinner("🔬 Analyzing medical report with AI..."):
-            response = model.generate_content(prompt)
-            return response.text
+            response = generate_text_report_with_retry(prompt)
+            return response
     except Exception as e:
         st.error(f"Error analyzing report: {str(e)}")
         return None
@@ -424,8 +425,8 @@ Rank by: 1) Condition relevance, 2) Budget appropriateness, 3) Success rate, 4) 
     
     try:
         with st.spinner("🏥 Finding best hospitals for your condition..."):
-            response = model.generate_content(prompt)
-            return response.text
+            response = generate_text_report_with_retry(prompt)
+            return response
     except Exception as e:
         st.error(f"Error getting recommendations: {str(e)}")
         return None

@@ -4,7 +4,8 @@ Image Classification module for MedInsight AI - RadiologyAI Pro
 import streamlit as st
 from PIL import Image
 import google.generativeai as genai
-from utils import process_image, generate_report, create_pdf_report
+from datetime import datetime
+from utils import process_image, generate_report_with_retry, create_pdf_report
 
 def show_classification_page():
     """Display the image classification page"""
@@ -65,7 +66,7 @@ def show_classification_page():
             st.markdown("### 📊 Analysis Results")
             
             if st.button("🚀 Generate Report", use_container_width=True, type="primary"):
-                result = generate_report(image, prompt)
+                result = generate_report_with_retry(image, prompt)
                 
                 if result:
                     st.markdown('<div class="report-box">', unsafe_allow_html=True)
