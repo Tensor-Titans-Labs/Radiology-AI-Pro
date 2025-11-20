@@ -1,77 +1,128 @@
-# MedInsight AI - RadiologyAI Pro
+# 🏥 MedInsight AI - RadiologyAI Pro
 
-AI-Powered Diagnostic Image Analysis Platform
+**Advanced Multi-Modal Medical Imaging Analysis & Hospital Recommendation System**
 
-## Project Structure
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.31.0-ff4b4b)
+![Gemini AI](https://img.shields.io/badge/AI-Gemini%202.0%20Flash-4285f4)
+![Status](https://img.shields.io/badge/Status-Prototype-orange)
 
+## 📋 Overview
+
+**MedInsight AI** is a comprehensive, AI-powered medical diagnostic assistant designed to bridge the gap between complex medical imaging and accessible healthcare insights. Leveraging Google's state-of-the-art **Gemini 2.0 Flash-Lite** model, it provides real-time analysis of X-rays, CT Scans, MRIs, and Ultrasounds, generating professional reports and offering localized hospital recommendations.
+
+This project serves as a powerful prototype for the future of digital health, acting as an intelligent "second opinion" tool for patients and a preliminary diagnostic aid for healthcare professionals.
+
+---
+
+## ✨ Key Unique Features
+
+MedInsight AI stands out due to its unified approach and resilient architecture:
+
+1.  **Comprehensive Multi-Modal Analysis**: A single platform for analyzing **X-rays, CT Scans, MRIs, and Ultrasounds**, unlike many single-purpose tools.
+2.  **Resilient AI Architecture**: Features a custom-engineered **Smart Fallback Mechanism** that intelligently switches between Gemini models (2.0 Flash, 1.5 Pro, etc.) to handle rate limits and ensure high availability.
+3.  **Localized Hospital Recommendations**: Bridges the gap to care by analyzing medical conditions and recommending suitable hospitals in the **Gulbarga region** (customizable).
+4.  **Automated Professional Reporting**: Instantly generates downloadable, professionally formatted **PDF Medical Reports** for record-keeping.
+5.  **Real-Time Diagnostic Support**: Provides immediate, detailed textual analysis to demystify complex medical scans.
+6.  **Intelligent Image Classification**: Automatically validates uploaded images to ensure the correct diagnostic model is applied.
+7.  **Cost-Optimized Performance**: Prioritizes efficient "Flash" models for rapid inference, falling back to "Pro" models only when necessary.
+
+---
+
+## 🛠️ Tech Stack
+
+*   **Frontend/Framework**: [Streamlit](https://streamlit.io/) (Python)
+*   **Artificial Intelligence**: Google [Gemini API](https://ai.google.dev/) (Models: `gemini-2.0-flash-lite`, `gemini-1.5-flash`, `gemini-1.5-pro`)
+*   **Image Processing**: [Pillow (PIL)](https://python-pillow.org/)
+*   **Report Generation**: [ReportLab](https://www.reportlab.com/)
+*   **Language**: Python 3.x
+
+---
+
+## 🚀 Installation & Setup
+
+Follow these steps to set up the project locally:
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/yourusername/medinsight-ai.git
+cd medinsight-ai
 ```
-medinsight_ai/
-│
-├── main.py                 # Main application entry point
-├── requirements.txt        # Project dependencies
-├── gemini_api.py           # API key configuration
-├── utils.py                # Utility functions
-│
-├── home/                   # Home page module
-│   └── home.py
-│
-├── image_classification/   # Image classification module
-│   └── classifier.py
-│
-├── xray/                   # X-ray report generation module
-│   └── xray_report.py
-│
-├── ct_scan/                # CT scan report generation module
-│   └── ct_report.py
-│
-├── mri/                    # MRI report generation module
-│   └── mri_report.py
-│
-├── ultrasound/             # Ultrasound report generation module
-│   └── ultrasound_report.py
-│
-├── hospital_recommendation/ # Hospital recommendation system for Gulbarga
-│   └── hospital_finder.py
-│
-└── README.md              # This file
+
+### 2. Create a Virtual Environment (Optional but Recommended)
+```bash
+python -m venv venv
+# Windows
+.\venv\Scripts\activate
+# macOS/Linux
+source venv/bin/activate
 ```
 
-## Features
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
 
-1. **Home Page** - Overview and introduction to the platform
-2. **Image Classification** - Automatically classify medical images
-3. **X-ray Report Generation** - Generate diagnostic reports from X-ray images
-4. **CT Scan Report Generation** - Generate clinical reports from CT scans
-5. **MRI Scan Report Generation** - Generate interpretation reports from MRI scans
-6. **Ultrasound Report Generation** - Generate diagnostic summaries from ultrasound images
-7. **Hospital Recommendation System** - Recommend hospitals in Gulbarga based on medical reports
+### 4. Configure API Key
+1.  Get your API key from [Google AI Studio](https://aistudio.google.com/).
+2.  Open `gemini_api.py` or set it as an environment variable.
+    *   *Option A (Environment Variable - Recommended):*
+        ```bash
+        export GEMINI_API_KEY="your_api_key_here"
+        # Or on Windows PowerShell:
+        $env:GEMINI_API_KEY="your_api_key_here"
+        ```
+    *   *Option B (Direct Edit - For testing only):*
+        Edit `gemini_api.py` and replace the default key.
 
-## Installation
+### 5. Run the Application
+```bash
+streamlit run main.py
+```
+The app will open in your browser at `http://localhost:8501`.
 
-1. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+---
 
-2. Run the application:
-   ```
-   streamlit run main.py
-   ```
+## 📖 Usage Guide
 
-## Modules
+1.  **Home**: Overview of the platform and quick access to features.
+2.  **Hospital Finder**: Describe your symptoms or condition to get AI-curated hospital recommendations.
+3.  **Image Classification**: Upload any medical image to identify if it's an X-ray, MRI, CT, or Ultrasound.
+4.  **Analysis Modules (X-Ray, CT, MRI, Ultrasound)**:
+    *   Upload your medical scan (PNG, JPG, JPEG).
+    *   Click **"Generate Report"**.
+    *   View the detailed AI analysis.
+    *   Download the findings as a **PDF Report**.
 
-Each feature is implemented as a separate module to maintain clean code organization and separation of concerns:
+---
 
-- **home/home.py** - Contains the home page implementation
-- **image_classification/classifier.py** - Handles image classification functionality
-- **xray/xray_report.py** - Manages X-ray report generation
-- **ct_scan/ct_report.py** - Manages CT scan report generation
-- **mri/mri_report.py** - Manages MRI report generation
-- **ultrasound/ultrasound_report.py** - Manages ultrasound report generation
-- **hospital_recommendation/hospital_finder.py** - Implements the hospital recommendation system
-- **utils.py** - Common utility functions used across modules
-- **gemini_api.py** - API key configuration for Google Gemini
+## ⚠️ Current Limitations
 
-## API Key Configuration
+As a prototype, please be aware of the following:
 
-The application uses Google Gemini API for AI-powered analysis. The API key is configured in `gemini_api.py`. For security, it's recommended to set the `GEMINI_API_KEY` environment variable instead of hardcoding it.
+*   **Dependency on Cloud API**: Requires an active internet connection and relies on Google's Gemini API availability.
+*   **Not for Clinical Diagnosis**: This tool is for **educational and informational purposes only**. It has not undergone clinical trials or FDA approval. **Always consult a certified medical professional for diagnosis.**
+*   **Static Hospital Data**: The hospital recommendation database is currently limited to specific regions and is not real-time.
+*   **Data Persistence**: The application is stateless; user data and reports are not saved after the session ends.
+
+---
+
+## 🔮 Future Scope
+
+*   Integration with real-time hospital databases and appointment booking systems.
+*   Implementation of secure user authentication and cloud database storage.
+*   Fine-tuning models on specific medical datasets for higher accuracy.
+*   Mobile application development.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🤝 Acknowledgements
+
+*   **Google DeepMind** for the Gemini API.
+*   **Streamlit** for the amazing rapid application development framework.
