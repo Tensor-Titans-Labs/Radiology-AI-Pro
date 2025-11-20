@@ -68,7 +68,7 @@ def show_ct_page():
             st.markdown("### 📊 Analysis Results")
             
             if st.button("🚀 Generate Report", use_container_width=True, type="primary"):
-                result = generate_report_with_retry(image, prompt)
+                result = generate_report_with_retry(image, prompt, model_name='gemini-2.0-flash-lite')
                 
                 if result:
                     st.markdown('<div class="report-box">', unsafe_allow_html=True)

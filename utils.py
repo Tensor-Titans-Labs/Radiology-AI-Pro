@@ -22,78 +22,137 @@ def process_image(uploaded_file):
         st.error(f"Error processing image: {str(e)}")
         return None
 
-def generate_report_with_retry(image, prompt, max_retries=3, base_delay=1):
-    """Generate report with retry mechanism for rate limiting"""
+def generate_report_with_retry(image, prompt, max_retries=3, base_delay=2, model_name='gemini-2.0-flash-lite'):
+    """Generate report with retry mechanism and model fallback"""
     # Convert image to bytes
     img_byte_arr = io.BytesIO()
     image.save(img_byte_arr, format='PNG')
     img_byte_arr = img_byte_arr.getvalue()
     
-    # Create the model
-    model = genai.GenerativeModel('gemini-2.0-flash-lite')
+    # List of models to try in order
+    # Prioritize the requested model, then fall back to efficient/stable models
+    models_to_try = [
+        model_name,
+        'gemini-2.0-flash-lite',
+        'gemini-2.5-flash-lite',
+        'gemini-flash-latest',
+        'gemini-pro-latest'
+    ]
     
-    for attempt in range(max_retries + 1):
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_models = [x for x in models_to_try if not (x in seen or seen.add(x))]
+    
+    last_error = None
+    
+    for current_model_name in unique_models:
         try:
-            # Generate content with the image and prompt
-            response = model.generate_content([
-                prompt,
-                {'mime_type': 'image/png', 'data': img_byte_arr}
-            ])
-            
-            # Return the response text if successful
-            return response.text
-            
+            # Create model
+            model = genai.GenerativeModel(current_model_name)
+            # st.info(f"Attempting with model: {current_model_name}")
         except Exception as e:
-            # Check if it's a rate limit error
-            error_message = str(e).lower()
-            if "quota exceeded" in error_message or "429" in error_message:
-                if attempt < max_retries:
-                    # Calculate delay with exponential backoff and jitter
-                    delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
-                    st.warning(f"Rate limit exceeded. Retrying in {delay:.1f} seconds... (Attempt {attempt + 1}/{max_retries + 1})")
-                    time.sleep(delay)
-                    continue
+            # st.warning(f"Skipping model {current_model_name}: {str(e)}")
+            continue
+            
+        # Retry loop for the current model
+        for attempt in range(max_retries + 1):
+            try:
+                # Generate content with the image and prompt
+                response = model.generate_content([
+                    prompt,
+                    {'mime_type': 'image/png', 'data': img_byte_arr}
+                ])
+                
+                # Return the response text if successful
+                if response.text:
+                    return response.text
+                
+            except Exception as e:
+                last_error = e
+                error_message = str(e).lower()
+                
+                # Handle Rate Limits (429 or Quota Exceeded)
+                if "quota exceeded" in error_message or "429" in error_message or "resource exhausted" in error_message:
+                    if attempt < max_retries:
+                        delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                        # st.warning(f"Rate limit on {current_model_name}. Retrying in {delay:.1f}s...")
+                        time.sleep(delay)
+                        continue
+                    else:
+                        # st.warning(f"Rate limit persisted for {current_model_name}. Switching model...")
+                        break # Break retry loop to try next model
+                
+                # Handle Internal Errors (500s)
+                elif "internal" in error_message or "overloaded" in error_message:
+                    if attempt < max_retries:
+                        time.sleep(base_delay)
+                        continue
+                    else:
+                        break # Try next model
+                
+                # Handle Blocked Content or other API errors
                 else:
-                    st.error(f"Rate limit exceeded after {max_retries + 1} attempts. Please try again later or consider upgrading your API plan.")
-                    return None
-            else:
-                # For other errors, don't retry
-                st.error(f"Error generating report: {str(e)}")
-                return None
-    
+                    st.error(f"Error with {current_model_name}: {str(e)}")
+                    break # Try next model immediately for non-transient errors
+        
+    st.error(f"Failed to generate report after trying multiple models. Last error: {str(last_error)}")
     return None
 
-def generate_text_report_with_retry(prompt, max_retries=3, base_delay=1):
-    """Generate text-based report with retry mechanism for rate limiting"""
-    # Create the model
-    model = genai.GenerativeModel('gemini-2.0-flash-lite')
+def generate_text_report_with_retry(prompt, max_retries=3, base_delay=2, model_name='gemini-2.0-flash-lite'):
+    """Generate text-based report with retry mechanism and model fallback"""
     
-    for attempt in range(max_retries + 1):
+    # List of models to try in order
+    models_to_try = [
+        model_name,
+        'gemini-2.0-flash-lite',
+        'gemini-2.5-flash-lite',
+        'gemini-flash-latest',
+        'gemini-pro-latest'
+    ]
+    
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_models = [x for x in models_to_try if not (x in seen or seen.add(x))]
+    
+    last_error = None
+    
+    for current_model_name in unique_models:
         try:
-            # Generate content with the prompt
-            response = model.generate_content(prompt)
-            
-            # Return the response text if successful
-            return response.text
-            
+            model = genai.GenerativeModel(current_model_name)
+            # st.info(f"Attempting with model: {current_model_name}")
         except Exception as e:
-            # Check if it's a rate limit error
-            error_message = str(e).lower()
-            if "quota exceeded" in error_message or "429" in error_message:
-                if attempt < max_retries:
-                    # Calculate delay with exponential backoff and jitter
-                    delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
-                    st.warning(f"Rate limit exceeded. Retrying in {delay:.1f} seconds... (Attempt {attempt + 1}/{max_retries + 1})")
-                    time.sleep(delay)
-                    continue
+            continue
+            
+        for attempt in range(max_retries + 1):
+            try:
+                response = model.generate_content(prompt)
+                if response.text:
+                    return response.text
+                
+            except Exception as e:
+                last_error = e
+                error_message = str(e).lower()
+                
+                if "quota exceeded" in error_message or "429" in error_message or "resource exhausted" in error_message:
+                    if attempt < max_retries:
+                        delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                        # st.warning(f"Rate limit on {current_model_name}. Retrying in {delay:.1f}s...")
+                        time.sleep(delay)
+                        continue
+                    else:
+                        # st.warning(f"Rate limit persisted for {current_model_name}. Switching model...")
+                        break
+                elif "internal" in error_message or "overloaded" in error_message:
+                    if attempt < max_retries:
+                        time.sleep(base_delay)
+                        continue
+                    else:
+                        break
                 else:
-                    st.error(f"Rate limit exceeded after {max_retries + 1} attempts. Please try again later or consider upgrading your API plan.")
-                    return None
-            else:
-                # For other errors, don't retry
-                st.error(f"Error generating report: {str(e)}")
-                return None
+                    # st.error(f"Error with {current_model_name}: {str(e)}")
+                    break
     
+    st.error(f"Failed to generate report. Please try again later. Last error: {str(last_error)}")
     return None
 
 def generate_report(image, prompt):
