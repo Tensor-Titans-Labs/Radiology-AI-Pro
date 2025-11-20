@@ -291,7 +291,7 @@ Be specific and medical in your analysis."""
     
     try:
         with st.spinner("🔬 Analyzing medical report with AI..."):
-            response = generate_text_report_with_retry(prompt)
+            response = generate_text_report_with_retry(prompt, model_name='gemini-2.0-flash-lite')
             return response
     except Exception as e:
         st.error(f"Error analyzing report: {str(e)}")
@@ -350,7 +350,7 @@ Rank by: 1) Condition relevance, 2) Budget appropriateness, 3) Success rate, 4) 
     
     try:
         with st.spinner("🏥 Finding best hospitals for your condition..."):
-            response = generate_text_report_with_retry(prompt)
+            response = generate_text_report_with_retry(prompt, model_name='gemini-2.0-flash-lite')
             return response
     except Exception as e:
         st.error(f"Error getting recommendations: {str(e)}")

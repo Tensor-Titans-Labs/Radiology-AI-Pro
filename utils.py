@@ -22,15 +22,34 @@ def process_image(uploaded_file):
         st.error(f"Error processing image: {str(e)}")
         return None
 
-def generate_report_with_retry(image, prompt, max_retries=3, base_delay=1):
+def generate_report_with_retry(image, prompt, max_retries=5, base_delay=2, model_name='gemini-1.5-flash'):
     """Generate report with retry mechanism for rate limiting"""
     # Convert image to bytes
     img_byte_arr = io.BytesIO()
     image.save(img_byte_arr, format='PNG')
     img_byte_arr = img_byte_arr.getvalue()
     
-    # Create the model
-    model = genai.GenerativeModel('gemini-2.0-flash-lite')
+    # List of fallback models in order of preference
+    fallback_models = [
+        model_name,
+        'gemini-1.5-flash',
+        'gemini-pro-vision',
+        'gemini-1.0-pro-vision'
+    ]
+    
+    model = None
+    for model_name in fallback_models:
+        try:
+            model = genai.GenerativeModel(model_name)
+            st.info(f"Using model: {model_name}")
+            break
+        except Exception as e:
+            st.warning(f"Failed to create model {model_name}: {str(e)}")
+            continue
+    
+    if model is None:
+        st.error("Failed to create any Gemini model. Please check your API key and network connection.")
+        return None
     
     for attempt in range(max_retries + 1):
         try:
@@ -49,12 +68,30 @@ def generate_report_with_retry(image, prompt, max_retries=3, base_delay=1):
             if "quota exceeded" in error_message or "429" in error_message:
                 if attempt < max_retries:
                     # Calculate delay with exponential backoff and jitter
-                    delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                    delay = base_delay * (2 ** attempt) + random.uniform(0, 2)
                     st.warning(f"Rate limit exceeded. Retrying in {delay:.1f} seconds... (Attempt {attempt + 1}/{max_retries + 1})")
                     time.sleep(delay)
                     continue
                 else:
                     st.error(f"Rate limit exceeded after {max_retries + 1} attempts. Please try again later or consider upgrading your API plan.")
+                    st.info("💡 Tips to reduce rate limit issues:\n1. Try using the application during off-peak hours (early morning or late night)\n2. Consider upgrading to a paid Gemini API plan for higher quotas\n3. Reduce the frequency of requests")
+                    return None
+            elif "internal" in error_message and "error" in error_message:
+                # Handle internal errors by retrying with a different model
+                if attempt < max_retries:
+                    st.warning(f"Internal error occurred. Trying with a different model... (Attempt {attempt + 1}/{max_retries + 1})")
+                    # Try next fallback model
+                    next_model_index = fallback_models.index(model.model_name) + 1 if model.model_name in fallback_models else 0
+                    if next_model_index < len(fallback_models):
+                        try:
+                            model = genai.GenerativeModel(fallback_models[next_model_index])
+                            st.info(f"Switching to model: {fallback_models[next_model_index]}")
+                        except:
+                            pass
+                    time.sleep(base_delay * (attempt + 1))
+                    continue
+                else:
+                    st.error(f"Internal error after {max_retries + 1} attempts. Please try again later.")
                     return None
             else:
                 # For other errors, don't retry
@@ -63,10 +100,29 @@ def generate_report_with_retry(image, prompt, max_retries=3, base_delay=1):
     
     return None
 
-def generate_text_report_with_retry(prompt, max_retries=3, base_delay=1):
+def generate_text_report_with_retry(prompt, max_retries=5, base_delay=2, model_name='gemini-1.5-flash'):
     """Generate text-based report with retry mechanism for rate limiting"""
-    # Create the model
-    model = genai.GenerativeModel('gemini-2.0-flash-lite')
+    # List of fallback models in order of preference
+    fallback_models = [
+        model_name,
+        'gemini-1.5-flash',
+        'gemini-pro',
+        'gemini-1.0-pro'
+    ]
+    
+    model = None
+    for model_name in fallback_models:
+        try:
+            model = genai.GenerativeModel(model_name)
+            st.info(f"Using model: {model_name}")
+            break
+        except Exception as e:
+            st.warning(f"Failed to create model {model_name}: {str(e)}")
+            continue
+    
+    if model is None:
+        st.error("Failed to create any Gemini model. Please check your API key and network connection.")
+        return None
     
     for attempt in range(max_retries + 1):
         try:
@@ -82,12 +138,30 @@ def generate_text_report_with_retry(prompt, max_retries=3, base_delay=1):
             if "quota exceeded" in error_message or "429" in error_message:
                 if attempt < max_retries:
                     # Calculate delay with exponential backoff and jitter
-                    delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                    delay = base_delay * (2 ** attempt) + random.uniform(0, 2)
                     st.warning(f"Rate limit exceeded. Retrying in {delay:.1f} seconds... (Attempt {attempt + 1}/{max_retries + 1})")
                     time.sleep(delay)
                     continue
                 else:
                     st.error(f"Rate limit exceeded after {max_retries + 1} attempts. Please try again later or consider upgrading your API plan.")
+                    st.info("💡 Tips to reduce rate limit issues:\n1. Try using the application during off-peak hours (early morning or late night)\n2. Consider upgrading to a paid Gemini API plan for higher quotas\n3. Reduce the frequency of requests")
+                    return None
+            elif "internal" in error_message and "error" in error_message:
+                # Handle internal errors by retrying with a different model
+                if attempt < max_retries:
+                    st.warning(f"Internal error occurred. Trying with a different model... (Attempt {attempt + 1}/{max_retries + 1})")
+                    # Try next fallback model
+                    next_model_index = fallback_models.index(model.model_name) + 1 if model.model_name in fallback_models else 0
+                    if next_model_index < len(fallback_models):
+                        try:
+                            model = genai.GenerativeModel(fallback_models[next_model_index])
+                            st.info(f"Switching to model: {fallback_models[next_model_index]}")
+                        except:
+                            pass
+                    time.sleep(base_delay * (attempt + 1))
+                    continue
+                else:
+                    st.error(f"Internal error after {max_retries + 1} attempts. Please try again later.")
                     return None
             else:
                 # For other errors, don't retry
